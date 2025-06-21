@@ -3,20 +3,35 @@ using Il2CppSLZ.Marrow;
 using Il2CppSLZ.Marrow.Data;
 // ReSharper disable InconsistentNaming
 
-namespace WeatherElectric.InfiniteAmmo.Patching;
+namespace WeatherElectric.InfiniteAmmo;
 
 [HarmonyPatch(typeof(AmmoInventory))]
-public static class AmmoInventoryPatch
+internal static class AmmoManager
 {
+    private static AmmoInventory ammoInventory;
+    
     [HarmonyPatch(nameof(AmmoInventory.Awake))]
     [HarmonyPostfix]
     public static void Awake(AmmoInventory __instance)
     {
+        ammoInventory = __instance;
+    }
+
+    public static bool HasAmmo()
+    {
+        var lightAmmoCount = ammoInventory.GetCartridgeCount("light");
+        var mediumAmmoCount = ammoInventory.GetCartridgeCount("medium");
+        var heavyAmmoCount = ammoInventory.GetCartridgeCount("heavy");
+        return lightAmmoCount != 0 || mediumAmmoCount != 0 || heavyAmmoCount != 0;
+    }
+
+    public static void AddAmmo()
+    {
         if (!Preferences.Enabled.Value) return;
         
-        __instance.AddCartridge(__instance.lightAmmoGroup, 1000);
-        __instance.AddCartridge(__instance.mediumAmmoGroup, 1000);
-        __instance.AddCartridge(__instance.heavyAmmoGroup, 1000);
+        ammoInventory.AddCartridge(ammoInventory.lightAmmoGroup, 2000);
+        ammoInventory.AddCartridge(ammoInventory.mediumAmmoGroup, 2000);
+        ammoInventory.AddCartridge(ammoInventory.heavyAmmoGroup, 2000);
     }
 
     [HarmonyPatch(nameof(AmmoInventory.RemoveCartridge))]
