@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Il2CppSLZ.Bonelab;
 using Il2CppSLZ.Marrow;
 using Il2CppSLZ.Marrow.Data;
 // ReSharper disable InconsistentNaming
@@ -15,9 +16,10 @@ internal static class AmmoManager
     public static void Awake(AmmoInventory __instance)
     {
         ammoInventory = __instance;
+        if (!HasAmmo()) AddAmmo();
     }
 
-    public static bool HasAmmo()
+    internal static bool HasAmmo()
     {
         var lightAmmoCount = ammoInventory.GetCartridgeCount("light");
         var mediumAmmoCount = ammoInventory.GetCartridgeCount("medium");
@@ -25,7 +27,7 @@ internal static class AmmoManager
         return lightAmmoCount != 0 || mediumAmmoCount != 0 || heavyAmmoCount != 0;
     }
 
-    public static void AddAmmo()
+    internal static void AddAmmo()
     {
         if (!Preferences.Enabled.Value) return;
         
@@ -55,5 +57,27 @@ internal static class AmmoManager
                 __instance.AddCartridge(__instance.heavyAmmoGroup, count);
                 break;
         }
+    }
+}
+
+[HarmonyPatch(typeof(Control_Gashapon))]
+internal static class GashaponPatch
+{
+    [HarmonyPatch(nameof(Control_Gashapon.SetupAmmo))]
+    [HarmonyPostfix]
+    public static void SetupAmmo()
+    {
+        if (!AmmoManager.HasAmmo()) AmmoManager.AddAmmo();
+    }
+}
+
+[HarmonyPatch(typeof(BonelabProgressionHelper))]
+internal static class ProgressionPatch
+{
+    [HarmonyPatch(nameof(BonelabProgressionHelper.RestoreAmmoCounts))]
+    [HarmonyPostfix]
+    public static void RestoreAmmoCounts()
+    {
+        if (!AmmoManager.HasAmmo()) AmmoManager.AddAmmo();
     }
 }
