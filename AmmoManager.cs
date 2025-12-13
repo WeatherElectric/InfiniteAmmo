@@ -1,7 +1,9 @@
 using HarmonyLib;
 using Il2CppSLZ.Bonelab;
-using Il2CppSLZ.Marrow;
+using Il2CppSLZ.Bonelab.SaveData;
 using Il2CppSLZ.Marrow.Data;
+using AmmoInventory = Il2CppSLZ.Marrow.AmmoInventory;
+
 // ReSharper disable InconsistentNaming
 
 namespace WeatherElectric.InfiniteAmmo;
@@ -66,17 +68,6 @@ internal static class GashaponPatch
     [HarmonyPatch(nameof(Control_Gashapon.SetupAmmo))]
     [HarmonyPostfix]
     public static void SetupAmmo()
-    {
-        if (!AmmoManager.HasAmmo()) AmmoManager.AddAmmo();
-    }
-}
-
-[HarmonyPatch(typeof(BonelabProgressionHelper))]
-internal static class ProgressionPatch
-{
-    [HarmonyPatch(nameof(BonelabProgressionHelper.RestoreAmmoCounts))]
-    [HarmonyPostfix]
-    public static void RestoreAmmoCounts()
     {
         if (!AmmoManager.HasAmmo()) AmmoManager.AddAmmo();
     }
